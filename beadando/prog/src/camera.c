@@ -31,6 +31,10 @@ void update_camera(Camera* camera, double time)
     camera->position.y += sin(angle) * camera->speed.y * time;
     camera->position.x += cos(side_angle) * camera->speed.x * time;
     camera->position.y += sin(side_angle) * camera->speed.x * time;
+
+	double angle2 = degree_to_radian(camera->rotation.x);
+	
+	camera->position.z += sin(angle2) *  camera->speed.y * time;
 	
 	/*
 	if(camera->speed.x > 0 || camera->speed.y > 0)
