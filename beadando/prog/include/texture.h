@@ -5,10 +5,19 @@
 
 typedef GLubyte Pixel[3];
 
+struct TextureReturnValue 
+{
+	GLuint textureId;
+	
+	int widthOfTexture;
+	
+	int heightOfTexture;
+};
+
 /**
  * Load texture from file and returns with the texture name.
  */
-GLuint load_texture(char* filename);
+struct TextureReturnValue load_texture(char* filename);
 
 #endif /* TEXTURE_H */
 

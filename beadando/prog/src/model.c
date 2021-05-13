@@ -206,7 +206,9 @@ int load_mtl_datas(FILE *mtl_file, struct MTLDatas *model_mtl_datas)
 			memset(currentMaterialData.texturesMapped[1], 0, lenOfTextureName + 1);
 			memcpy(currentMaterialData.texturesMapped[1], currentTextureName, lenOfTextureName - 1);
 			
-			currentMaterialData.texturesMappedToOpenGLIds[1] = load_texture(currentMaterialData.texturesMapped[1]);
+			struct TextureReturnValue currRet = load_texture(currentMaterialData.texturesMapped[1]);
+			
+			currentMaterialData.texturesMappedToOpenGLIds[1] = currRet.textureId;
 			
 			printf("texture id: %d | name: %s\n", currentMaterialData.texturesMappedToOpenGLIds[1], currentMaterialData.texturesMapped[1]);
 			
@@ -403,6 +405,18 @@ void read_element_from_line(const char* line, struct Model* model)
             read_normal(&token_array, &(model->normals[model->n_normals]));
             ++model->n_normals;
         }
+		else if(strcmp(first_token, "usemtl") == 0) {
+			char *currToken = token_array.tokens[1];
+			
+			//printf("currToken: %s\n", currToken);
+			
+			int len = strlen(currToken);
+			
+			model->lastMTLLoaded = malloc(len + 1);
+			
+			memset(model->lastMTLLoaded, 0, len + 1);
+			memcpy(model->lastMTLLoaded, currToken, len);
+		}
         else if (strcmp(first_token, "f") == 0) {
             if (token_array.n_tokens == 1 + 3) {
                 triangle = &(model->triangles[model->n_triangles]);
@@ -432,17 +446,7 @@ void read_element_from_line(const char* line, struct Model* model)
 				
                 ++model->n_quads;
             }
-        } else if(strcmp(first_token, "usemtl") == 0) {
-			
-			char *currToken = token_array.tokens[1];
-			
-			int len = strlen(currToken);
-			
-			model->lastMTLLoaded = malloc(len + 1);
-			
-			memset(model->lastMTLLoaded, 0, len + 1);
-			memcpy(model->lastMTLLoaded, currToken, len);
-		}
+        }
     }
 
     free_tokens(&token_array);
@@ -484,6 +488,22 @@ void read_triangle(const struct TokenArray* token_array, struct Triangle* triang
     for (i = 0; i < 3; ++i) {
         read_face_point(token_array->tokens[i + 1], &triangle->points[i], model);
     }
+	
+	int currentMaterialIndex = -1;
+	
+	for(i = 0; i < model->model_mtlDatas.numOfLoadedMaterials; i++)
+	{
+		struct MTLMaterialDatas *currentMaterialData = &model->model_mtlDatas.currentMaterials[i];
+
+		if(!strcmp(currentMaterialData->materialName, model->lastMTLLoaded))
+		{
+			currentMaterialIndex = currentMaterialData->texturesMappedToOpenGLIds[1];
+			
+			break;
+		}
+	}
+	
+	triangle->points[0].material_index = currentMaterialIndex;
 }
 
 void read_quad(const struct TokenArray* token_array, struct Quad* quad, struct Model *model)
@@ -493,6 +513,22 @@ void read_quad(const struct TokenArray* token_array, struct Quad* quad, struct M
     for (i = 0; i < 4; ++i) {
         read_face_point(token_array->tokens[i + 1], &quad->points[i], model);
     }
+	
+	int currentMaterialIndex = -1;
+	
+	for(i = 0; i < model->model_mtlDatas.numOfLoadedMaterials; i++)
+	{
+		struct MTLMaterialDatas *currentMaterialData = &model->model_mtlDatas.currentMaterials[i];
+
+		if(!strcmp(currentMaterialData->materialName, model->lastMTLLoaded))
+		{
+			currentMaterialIndex = currentMaterialData->texturesMappedToOpenGLIds[1];
+			
+			break;
+		}
+	}
+	
+	quad->points[0].material_index = currentMaterialIndex;
 }
 
 void read_face_point(const char* text, struct FacePoint* face_point, struct Model *model)
@@ -504,36 +540,16 @@ void read_face_point(const char* text, struct FacePoint* face_point, struct Mode
     token = text;
     delimiter_count = count_face_delimiters(text);
 	
-	int currentMaterialIndex = -1;
-	
-	int i = 0;
-	
-	for(i = 0; i < model->model_mtlDatas.numOfLoadedMaterials; i++)
-	{
-		struct MTLMaterialDatas *currentMaterialData = &model->model_mtlDatas.currentMaterials[i];
-
-		if(!strcmp(currentMaterialData->materialName, model->lastMTLLoaded))
-		{
-			//printf("text: %s | name: %s\n", text, currentMaterialData->materialName);
-			
-			currentMaterialIndex = i;
-			
-			break;
-		}
-	}
-	
     if (delimiter_count == 0) {
         face_point->vertex_index = read_next_index(token, &length);
         face_point->texture_index = INVALID_VERTEX_INDEX;
         face_point->normal_index = INVALID_VERTEX_INDEX;
-		face_point->material_index = currentMaterialIndex;
     }
     else if (delimiter_count == 1) {
         face_point->vertex_index = read_next_index(token, &length);
         token += length;
         face_point->texture_index = read_next_index(token, &length);
         face_point->normal_index = INVALID_VERTEX_INDEX;
-		face_point->material_index = currentMaterialIndex;
     }
     else if (delimiter_count == 2) {
         // TODO: Handle the v//n special case!
@@ -542,7 +558,6 @@ void read_face_point(const char* text, struct FacePoint* face_point, struct Mode
         face_point->texture_index = read_next_index(token, &length);
         token += length;
         face_point->normal_index = read_next_index(token, &length);
-		face_point->material_index = currentMaterialIndex;
     }
     else {
         printf("ERROR: Invalid face token! '%s'", text);

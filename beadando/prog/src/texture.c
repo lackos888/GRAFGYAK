@@ -2,7 +2,7 @@
 
 #include <SOIL/SOIL.h>
 
-GLuint load_texture(char* filename)
+struct TextureReturnValue load_texture(char* filename)
 {
     GLuint texture_name;
     glGenTextures(1, &texture_name);
@@ -15,8 +15,8 @@ GLuint load_texture(char* filename)
     glBindTexture(GL_TEXTURE_2D, texture_name);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (Pixel*)image);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -25,7 +25,15 @@ GLuint load_texture(char* filename)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     */
+	
+	struct TextureReturnValue newRet = {0};
+	
+	newRet.textureId = texture_name;
+	
+	newRet.widthOfTexture = width;
+	
+	newRet.heightOfTexture = height;
 
-    return texture_name;
+    return newRet;
 }
 

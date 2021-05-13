@@ -10,7 +10,6 @@ typedef struct Scene
 {
     struct Model cube;
     Material material;
-    GLuint texture_id;
 } Scene;
 
 /**
