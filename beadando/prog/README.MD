@@ -9,7 +9,7 @@ A modellek jogainak nagyrésze a **Rockstar Games** és a **TakeTwo** tulajdoná
 - alapfunkciók
 - ütközésvizsgálat
 - felhasználói felület
-- térkép kezelése (JSON)
+- térkép kezelése
 - environment mapping
 - objektumok kijelölése egérrel
 - animáció (zászlóra)
