@@ -5,13 +5,13 @@
 
 #include <stdio.h>
 
-void draw_model(const struct Model* model)
+void draw_model(const struct Model* model, float offsetX, float offsetY, float offsetZ, float scaleX, float scaleY, float scaleZ)
 {
-    draw_triangles(model);
+    draw_triangles(model, offsetX, offsetY, offsetZ, scaleX, scaleY, scaleZ);
     // draw_quads(model);
 }
 
-void draw_triangles(const struct Model* model)
+void draw_triangles(const struct Model* model, float offsetX, float offsetY, float offsetZ, float scaleX, float scaleY, float scaleZ)
 {
     int i, k;
     int vertex_index, texture_index, normal_index;
@@ -19,9 +19,7 @@ void draw_triangles(const struct Model* model)
 
     for (i = 0; i < model->n_triangles; ++i) 
 	{
-		unsigned int currentTextureIndex = model->triangles[i].points[0].material_index;
-		
-		glBindTexture(GL_TEXTURE_2D, currentTextureIndex);
+		glBindTexture(GL_TEXTURE_2D, model->triangles[i].points[0].material_index);
 		
 		glBegin(GL_TRIANGLES);
 		
@@ -31,7 +29,7 @@ void draw_triangles(const struct Model* model)
             normal_x = model->normals[normal_index].x;
             normal_y = model->normals[normal_index].y;
             normal_z = model->normals[normal_index].z;
-            glNormal3d(normal_x, normal_y, normal_z);
+            glNormal3d(offsetX + normal_x, offsetY + normal_y, offsetZ + normal_z);
 			
             texture_index = model->triangles[i].points[k].texture_index;
 			
@@ -41,12 +39,10 @@ void draw_triangles(const struct Model* model)
 			glTexCoord2f(u, 1 - v);
 
             vertex_index = model->triangles[i].points[k].vertex_index;
-            x = model->vertices[vertex_index].x;
-            y = model->vertices[vertex_index].y;
-            z = model->vertices[vertex_index].z;
-            glVertex3d(x, y, z);
-			
-			
+            x = model->vertices[vertex_index].x * scaleX;
+            y = model->vertices[vertex_index].y * scaleY;
+            z = model->vertices[vertex_index].z * scaleZ;
+            glVertex3d(offsetX + x, offsetY + y, offsetZ + z);
         }
 		
 		glEnd();

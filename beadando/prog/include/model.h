@@ -76,6 +76,21 @@ typedef struct MTLDatas
 	int numOfLoadedMaterials;
 };
 
+struct ModelBoundingBoxStruct
+{
+	float min_x;
+	
+	float min_y;
+	
+	float min_z;
+	
+	float max_x;
+	
+	float max_y;
+	
+	float max_z;
+};
+
 struct Model
 {
     int n_vertices;
@@ -88,6 +103,7 @@ struct Model
     struct Vertex* normals;
     struct Triangle* triangles;
     struct Quad* quads;
+	struct ModelBoundingBoxStruct boundingBox;
 	
 	char *lastMTLLoaded;
 	
@@ -188,7 +204,7 @@ void create_arrays(struct Model* model);
 /**
  * Read vertex data.
  */
-void read_vertex(const struct TokenArray* token_array, struct Vertex* vertex);
+void read_vertex(const struct TokenArray* token_array, struct Vertex* vertex, struct Model *model);
 
 /**
  * Read texture vertex data.
@@ -213,7 +229,7 @@ void read_quad(const struct TokenArray* token_array, struct Quad* quad, struct M
 /**
  * Read face point data.
  */
-void read_face_point(const char* text, struct FacePoint* face_point, struct Model *model);
+void read_face_point(const char* text, struct FacePoint* face_point);
 
 /**
  * Count the delimiters in the face token.

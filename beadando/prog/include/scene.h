@@ -8,7 +8,8 @@
 
 typedef struct Scene
 {
-    struct Model cube;
+    struct Model cityhall;
+    struct Model cityhall_ground;
     Material material;
 } Scene;
 

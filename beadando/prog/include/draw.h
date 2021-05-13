@@ -6,12 +6,12 @@
 /**
  * Draw the model.
  */
-void draw_model(const struct Model* model);
+void draw_model(const struct Model* model, float offsetX, float offsetY, float offsetZ, float scaleX, float scaleY, float scaleZ);
 
 /**
  * Draw the triangles of the model.
  */
-void draw_triangles(const struct Model* model);
+void draw_triangles(const struct Model* model, float offsetX, float offsetY, float offsetZ, float scaleX, float scaleY, float scaleZ);
 
 /**
  * Draw the quads of the model.

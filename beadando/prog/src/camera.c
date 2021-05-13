@@ -36,6 +36,11 @@ void update_camera(Camera* camera, double time)
 	
 	camera->position.z += sin(angle2) *  camera->speed.y * time;
 	
+	if(camera->position.z < -1.4)
+	{
+		camera->position.z = -1.4;
+	}
+	
 	/*
 	if(camera->speed.x > 0 || camera->speed.y > 0)
 	{

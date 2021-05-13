@@ -4,12 +4,23 @@
 
 #include "model.h"
 #include "draw.h"
+#include "terrain.h"
+
+struct Terrain currentTerrain = { 0 };
 
 void init_scene(Scene* scene)
 {
-    load_model("varoshaza_new.obj", &(scene->cube));
+	init_terrain(&currentTerrain);
 	
-	scale_model(&(scene->cube), 0.15f, 0.15f, 0.15f);
+	/*
+    load_model("varoshaza_new.obj", &(scene->cityhall));
+	
+	scale_model(&(scene->cityhall), 0.15f, 0.15f, 0.15f);
+	
+    load_model("cityhallground.obj", &(scene->cityhall_ground));
+	
+	scale_model(&(scene->cityhall_ground), 0.15f, 0.15f, 0.15f);
+	*/
 	
     scene->material.ambient.red = 1.0;
     scene->material.ambient.green = 1.0;
@@ -33,10 +44,10 @@ void set_lighting()
     float specular_light[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     float position[] = { 0.0f, 0.0f, 50.0f, 1.0f };
 
-    //glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_light);
-    //glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_light);
-    //glLightfv(GL_LIGHT0, GL_SPECULAR, specular_light);
-    //glLightfv(GL_LIGHT0, GL_POSITION, position);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_light);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_light);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specular_light);
+    glLightfv(GL_LIGHT0, GL_POSITION, position);
 }
 
 void set_material(const Material* material)
@@ -68,10 +79,17 @@ void set_material(const Material* material)
 
 void draw_scene(const Scene* scene)
 {
-    set_material(&(scene->material));
+	draw_origin();
+	
+	set_material(&(scene->material));
+	
+	draw_terrain(&currentTerrain);
+    
     set_lighting();
     //draw_origin();
-    draw_model(&(scene->cube));
+    //draw_model(&(scene->cityhall), 0, 0, 0);
+	
+    //draw_model(&(scene->cityhall_ground), 0, 0, scene->cityhall.boundingBox.min_z);
 }
 
 void draw_origin()

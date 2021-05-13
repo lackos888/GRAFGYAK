@@ -1,0 +1,9 @@
+# Terrain syntax:
+
+# modelname scalex scaley scalez posx posy posz rotx roty rotz
+# modelname posx posy posz rotx roty rotz
+
+setdefaultscale 0.15 0.15 0.15
+
+varoshaza_new 0 0 0 0 0 0
+cityhallground 0 0 -1.5072246 0 0 0

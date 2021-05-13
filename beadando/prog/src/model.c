@@ -242,6 +242,8 @@ int load_model(const char* filename, struct Model* model)
         return FALSE;
     }
 	
+	memset(model, 0, sizeof(struct Model));
+	
 	model->lastMTLLoaded = "UNKNOWN";
 	
 	int lenOfFullPath = strlen(filename);
@@ -250,17 +252,15 @@ int load_model(const char* filename, struct Model* model)
 	memcpy(mtlFileName, filename, lenOfFullPath - 4);
 	memcpy(mtlFileName + (lenOfFullPath - 4), ".mtl", 4);
 	
-	printf("newFileName: %s\n", mtlFileName);
-	
 	FILE *mtl_file = fopen(mtlFileName, "r");
 	
 	memset(&model->model_mtlDatas, 0, sizeof(struct MTLDatas));
 	
 	int numOfMaterials = load_mtl_datas(mtl_file, &model->model_mtlDatas);
 	
-	printf("numOfMaterials loaded: %d\n", numOfMaterials);
-	
 	fclose(mtl_file);
+	
+	model->boundingBox.min_x = 0xDEADBEEF;
 	
     count_elements(obj_file, model);
     //if (model->n_normals != 0 && model->n_normals != model->n_vertices) {
@@ -272,6 +272,8 @@ int load_model(const char* filename, struct Model* model)
     //}
     create_arrays(model);
     read_elements(obj_file, model);
+	
+	//print_bounding_box(model);
     //if (model->n_normals != model->n_vertices) {
     //    calc_normals(model);
     //}
@@ -394,7 +396,7 @@ void read_element_from_line(const char* line, struct Model* model)
         first_token = token_array.tokens[0];
 		
         if (strcmp(first_token, "v") == 0) {
-            read_vertex(&token_array, &(model->vertices[model->n_vertices]));
+            read_vertex(&token_array, &(model->vertices[model->n_vertices]), model);
             ++model->n_vertices;
         }
         else if (strcmp(first_token, "vt") == 0) {
@@ -461,11 +463,47 @@ void create_arrays(struct Model* model)
     model->quads = (struct Quad*)malloc(model->n_quads * sizeof(struct Quad));
 }
 
-void read_vertex(const struct TokenArray* token_array, struct Vertex* vertex)
+void read_vertex(const struct TokenArray* token_array, struct Vertex* vertex, struct Model *model)
 {
     vertex->x = atof(token_array->tokens[1]);
     vertex->y = atof(token_array->tokens[2]);
     vertex->z = atof(token_array->tokens[3]);
+
+	if(model->boundingBox.min_x == 0xDEADBEEF)
+	{
+		model->boundingBox.min_x = vertex->x;
+		model->boundingBox.max_x = vertex->x;
+		
+		model->boundingBox.min_y = vertex->y;
+		model->boundingBox.max_y = vertex->y;
+		
+		model->boundingBox.min_z = vertex->z;
+		model->boundingBox.max_z = vertex->z;
+	}
+	
+	if(vertex->x < model->boundingBox.min_x)
+	{
+		model->boundingBox.min_x = vertex->x;
+	} else if(vertex->x > model->boundingBox.max_x)
+	{
+		model->boundingBox.max_x = vertex->x;
+	}
+
+	if(vertex->y < model->boundingBox.min_y)
+	{
+		model->boundingBox.min_y = vertex->y;
+	} else if(vertex->y > model->boundingBox.max_y)
+	{
+		model->boundingBox.max_y = vertex->y;
+	}
+
+	if(vertex->z < model->boundingBox.min_z)
+	{
+		model->boundingBox.min_z = vertex->z;
+	} else if(vertex->z > model->boundingBox.max_z)
+	{
+		model->boundingBox.max_z = vertex->z;
+	}
 }
 
 void read_texture_vertex(const struct TokenArray* token_array, struct TextureVertex* texture_vertex)
@@ -486,7 +524,7 @@ void read_triangle(const struct TokenArray* token_array, struct Triangle* triang
     int i;
 
     for (i = 0; i < 3; ++i) {
-        read_face_point(token_array->tokens[i + 1], &triangle->points[i], model);
+        read_face_point(token_array->tokens[i + 1], &triangle->points[i]);
     }
 	
 	int currentMaterialIndex = -1;
@@ -511,7 +549,7 @@ void read_quad(const struct TokenArray* token_array, struct Quad* quad, struct M
     int i;
 
     for (i = 0; i < 4; ++i) {
-        read_face_point(token_array->tokens[i + 1], &quad->points[i], model);
+        read_face_point(token_array->tokens[i + 1], &quad->points[i]);
     }
 	
 	int currentMaterialIndex = -1;
@@ -531,7 +569,7 @@ void read_quad(const struct TokenArray* token_array, struct Quad* quad, struct M
 	quad->points[0].material_index = currentMaterialIndex;
 }
 
-void read_face_point(const char* text, struct FacePoint* face_point, struct Model *model)
+void read_face_point(const char* text, struct FacePoint* face_point)
 {
     int delimiter_count;
     const char* token;
@@ -798,4 +836,13 @@ void scale_model(struct Model* model, double sx, double sy, double sz)
         model->vertices[i].y *= sy;
         model->vertices[i].z *= sz;
     }
+	
+	model->boundingBox.min_x *= sx;
+	model->boundingBox.max_x *= sx;
+	
+	model->boundingBox.min_y *= sy;
+	model->boundingBox.max_y *= sy;
+	
+	model->boundingBox.min_z *= sz;
+	model->boundingBox.max_z *= sz;
 }
