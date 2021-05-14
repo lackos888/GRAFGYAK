@@ -5,17 +5,26 @@
 
 #include <stdio.h>
 
-void draw_model(const struct Model* model, float offsetX, float offsetY, float offsetZ, float scaleX, float scaleY, float scaleZ)
+void draw_model(const struct Model* model, float offsetX, float offsetY, float offsetZ, float scaleX, float scaleY, float scaleZ, float rotX, float rotY, float rotZ)
 {
-    draw_triangles(model, offsetX, offsetY, offsetZ, scaleX, scaleY, scaleZ);
+    draw_triangles(model, offsetX, offsetY, offsetZ, scaleX, scaleY, scaleZ, rotX, rotY, rotZ);
     // draw_quads(model);
 }
 
-void draw_triangles(const struct Model* model, float offsetX, float offsetY, float offsetZ, float scaleX, float scaleY, float scaleZ)
+int rand_with_minmax(int minimum_number, int max_number)
 {
+	return rand() % (max_number + 1 - minimum_number) + minimum_number;
+}
+
+void draw_triangles(const struct Model* model, float offsetX, float offsetY, float offsetZ, float scaleX, float scaleY, float scaleZ, float rotX, float rotY, float rotZ)
+{
+	srand(time(0));
+	
     int i, k;
     int vertex_index, texture_index, normal_index;
     double x, y, z, normal_x, normal_y, normal_z, u, v;
+	
+	int randNum = rand_with_minmax(1, 2);
 
     for (i = 0; i < model->n_triangles; ++i) 
 	{
@@ -39,6 +48,9 @@ void draw_triangles(const struct Model* model, float offsetX, float offsetY, flo
 			glTexCoord2f(u, 1 - v);
 
             vertex_index = model->triangles[i].points[k].vertex_index;
+			
+			
+			
             x = model->vertices[vertex_index].x * scaleX;
             y = model->vertices[vertex_index].y * scaleY;
             z = model->vertices[vertex_index].z * scaleZ;
