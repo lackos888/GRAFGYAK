@@ -5,6 +5,8 @@
 #include "model.h"
 #include "draw.h"
 
+struct Terrain *globalTerrain = NULL;
+
 void init_terrain(struct Terrain* terrain)
 {
 	FILE* terrain_file = fopen("terrain.txt", "r");
@@ -14,6 +16,8 @@ void init_terrain(struct Terrain* terrain)
         printf("ERROR: Unable to open terrain file!\n");
         return FALSE;
     }
+	
+	globalTerrain = terrain;
 	
 	terrain->defaultScalingX = 1.0f;
 	terrain->defaultScalingY = 1.0f;
@@ -193,6 +197,58 @@ struct ModelBoundingBoxStruct get_sized_object_bounding_box(struct Terrain *curr
 	return currStruct;
 }
 
+int currentlySelectedObjectId = -1;
+
+void try_to_select_terrain_object(double objx, double objy, double objz)
+{
+	struct Terrain *currentTerrain = globalTerrain;
+	
+	int i = 0;
+	
+	currentlySelectedObjectId = -1;
+	
+	for(i = 0; i < currentTerrain->numberOfObjects; i++)
+	{
+		struct ObjectsWithPositionAndRotation *currentObject = &currentTerrain->currentObjects[i];
+		
+		struct ModelBoundingBoxStruct currentBoundingBox = get_sized_object_bounding_box(currentTerrain, currentObject);
+		
+		float minX = currentObject->posX + currentBoundingBox.min_x;
+		float maxX = currentObject->posX + currentBoundingBox.max_x;
+		
+		float minY = currentObject->posY + currentBoundingBox.min_y;
+		float maxY = currentObject->posY + currentBoundingBox.max_y;
+		
+		float minZ = currentObject->posZ + currentBoundingBox.min_z;
+		float maxZ = currentObject->posZ + currentBoundingBox.max_z;
+		
+		printf("%d|currentBoundingBox.min_x: %f | minX: %f | objx: %f\n", i, currentBoundingBox.min_x, minX, objx);
+		
+		printf("%d|currentBoundingBox.min_y: %f | minY: %f | objy: %f\n", i, currentBoundingBox.min_y, minY, objy);
+		
+		printf("%d|currentBoundingBox.min_z: %f | minZ: %f | objz: %f\n", i, currentBoundingBox.min_z, minZ, objz);
+		
+		printf("%d|currentBoundingBox.max_x: %f | maxX: %f | objx: %f\n", i, currentBoundingBox.max_x, maxX, objx);
+		
+		printf("%d|currentBoundingBox.max_y: %f | maxY: %f | objy: %f\n", i, currentBoundingBox.max_y, maxY, objy);
+		
+		printf("%d|currentBoundingBox.max_z: %f | maxZ: %f | objz: %f\n", i, currentBoundingBox.max_z, maxZ, objz);
+		
+		//printf("objx: %f | minx: %f | maxx: %f\n", objx, minX, maxX);
+		
+		//printf("objy: %f | minx: %f | maxx: %f\n", objy, minY, maxY);
+		
+		//printf("objz: %f | minx: %f | maxx: %f\n", objz, minZ, maxZ);
+		
+		if(objx >= minX && objx <= maxX && objy >= minY && objy <= maxY && objz >= minZ && objz <= maxZ)
+		{
+			currentlySelectedObjectId = i;
+			
+			break;
+		}
+	}
+}
+
 void draw_terrain(const struct Terrain* terrain)
 {
 	int i = 0;
@@ -203,6 +259,30 @@ void draw_terrain(const struct Terrain* terrain)
 
 		struct ModelCache *cacheEntry = &terrain->currentModelCache[currentObject->currentModelCacheEntryIndex];
 		
-		draw_model(&cacheEntry->currentModel, currentObject->posX, currentObject->posY, currentObject->posZ, currentObject->scaleX, currentObject->scaleY, currentObject->scaleZ);
+		if(currentlySelectedObjectId == i)
+		{
+			float material_color[] = {
+				1,
+				0,
+				0
+			};
+			
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material_color);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material_color);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material_color);
+		} else 
+		{
+			float material_color[] = {
+				1,
+				1,
+				1
+			};
+			
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material_color);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material_color);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material_color);
+		}
+		
+		draw_model(&cacheEntry->currentModel, currentObject->posX, currentObject->posY, currentObject->posZ, currentObject->scaleX, currentObject->scaleY, currentObject->scaleZ, currentObject->rotX, currentObject->rotY, currentObject->rotZ);
 	}
 }

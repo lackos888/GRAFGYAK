@@ -68,4 +68,8 @@ struct ModelBoundingBoxStruct get_sized_object_bounding_box(struct Terrain *curr
 
 void parse_current_terrain_line(struct Terrain *currentTerrain, char **overallTokens, int numberOfTokens);
 
+/* Tries to select terrain object */
+
+void try_to_select_terrain_object(double objx, double objy, double objz);
+
 #endif /* TERRAIN_H */

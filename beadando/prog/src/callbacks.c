@@ -1,4 +1,5 @@
 #include "callbacks.h"
+#include <GL/glu.h>
 
 #define VIEWPORT_RATIO (4.0 / 3.0)
 #define VIEWPORT_ASPECT 50.0
@@ -50,45 +51,83 @@ void reshape(GLsizei width, GLsizei height)
     gluPerspective(VIEWPORT_ASPECT, VIEWPORT_RATIO, 0.01, 10000.0);
 }
 
+int lastButton = 0;
+
 void mouse(int button, int state, int x, int y)
 {
+	lastButton = button;
+	//printf("button: %d | state: %d\n", button, state);
+	
     mouse_position.x = x;
     mouse_position.y = y;
+	
+	if(button == 0 && state == 1)
+	{
+		/*
+		float z = 0.0f;
+		
+		double modelview[16] = {0};
+		double projection[16] = {0};
+		
+		int viewport[4] = {0};
+		
+		glGetDoublev(GL_PROJECTION_MATRIX, projection);
+		
+		glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+		
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		
+		glReadPixels(x, viewport[3]-y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+		
+		double objx, objy, objz;
+		
+		gluUnProject(x, viewport[3]-y, z, modelview, projection, viewport, &objx, &objy, &objz);
+		
+
+		try_to_select_terrain_object(objx, objy, objz);
+		*/
+		
+		//printf("%f, %f, %f\n", objx, objy, objz);
+		
+		//printf("z: %f | mousepos: %d %d\n", z, mouse_position.x, mouse_position.y);
+	}
 }
 
 void motion(int x, int y)
 {
-    rotate_camera(&camera, mouse_position.x - x, mouse_position.y - y);
-    mouse_position.x = x;
-    mouse_position.y = y;
-    glutPostRedisplay();
+	if(lastButton == 1)
+	{
+		rotate_camera(&camera, mouse_position.x - x, mouse_position.y - y);
+		mouse_position.x = x;
+		mouse_position.y = y;
+		glutPostRedisplay();
+	}
 }
 
 void keyboard(unsigned char key, int x, int y)
 {
     switch (key) {
-    case 'w':
-        set_camera_speed(&camera, 3);
-        break;
-    case 's':
-        set_camera_speed(&camera, -3);
-        break;
-    case 'a':
-        set_camera_side_speed(&camera, 3);
-        break;
-    case 'd':
-        set_camera_side_speed(&camera, -3);
-        break;
-    case 't':
-        if (is_preview_visible) {
-            is_preview_visible = FALSE;
-        }
-        else {
-            is_preview_visible = TRUE;
-        }
-        break;
+		case 'w':
+			set_camera_speed(&camera, 3);
+			break;
+		case 's':
+			set_camera_speed(&camera, -3);
+			break;
+		case 'a':
+			set_camera_side_speed(&camera, 3);
+			break;
+		case 'd':
+			set_camera_side_speed(&camera, -3);
+			break;
+		case 't':
+			if (is_preview_visible) {
+				is_preview_visible = FALSE;
+			}
+			else {
+				is_preview_visible = TRUE;
+			}
+			break;
     }
-
     glutPostRedisplay();
 }
 
